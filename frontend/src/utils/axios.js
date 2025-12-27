@@ -3,15 +3,18 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api", // backend base URL
+  withCredentials: true,
 });
 
 // Add a request interceptor for auth token
 api.interceptors.request.use(
   (config) => {
+    // Get token from localStorage and add to Authorization header
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // Cookies are handled automatically with withCredentials: true
     return config;
   },
   (error) => Promise.reject(error)

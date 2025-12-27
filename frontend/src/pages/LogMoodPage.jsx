@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Heart, MessageCircle, Send, Smile, Frown, Meh, AlertTriangle, Zap } from "lucide-react";
 import api from "@/utils/axios";
+import { useAuth } from "@/context/AuthContext";
 
 const MOOD_OPTIONS = [
   { emoji: "😊", value: "happy", label: "Happy", color: "from-orange-400 to-pink-400", icon: Smile },
@@ -15,6 +16,7 @@ export default function LogMoodPage() {
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null);
+  const { user } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,8 +27,7 @@ export default function LogMoodPage() {
       return;
     }
 
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!user) {
       setStatus({ type: "error", message: "Please log in to save your mood." });
       return;
     }
@@ -38,7 +39,7 @@ export default function LogMoodPage() {
         note: note.trim() || undefined,
       });
 
-      setStatus({ type: "success", message: "Mood logged successfully! ❤️" });
+      setStatus({ type: "success", message: "Mood logged successfully!" });
       setMood("");
       setNote("");
     } catch (err) {

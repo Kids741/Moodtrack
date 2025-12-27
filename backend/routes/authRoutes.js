@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import rateLimit from "express-rate-limit"; 
 import User from "../models/User.js";
 import { validateRegister, validateLogin } from "../controllers/authController.js";
+import protect from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -38,12 +39,18 @@ router.post("/register", validateRegister, async (req, res) => {
     const token = jwt.sign(
       { id: newUser._id },
       process.env.JWT_SECRET,
-      { expiresIn: "60m" }
+      { expiresIn: "10m" }
     );
+
+    res.cookie("jwt", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 10 * 60 * 1000, // 10 minutes
+    });
 
     res.status(201).json({ 
       message: "User registered successfully", 
-      token,
       user: {
         id: newUser._id,
         name: newUser.name,
@@ -72,15 +79,41 @@ router.post("/login", validateLogin, loginLimiter, async (req, res) => {
       { expiresIn: "60m" }
     );
 
+    res.cookie("jwt", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 60 * 60 * 1000, // 1 hour
+    });
+
     res.json({
       message: "Login successful",
-      token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
       },
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Logout user
+router.post("/logout", (req, res) => {
+  res.cookie("jwt", "", {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+  res.status(200).json({ message: "Logged out successfully" });
+});
+
+// Get current user
+router.get("/me", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

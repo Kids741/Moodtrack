@@ -1,31 +1,45 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import api from "../utils/axios";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // When the app loads, check for a saved token
+  // When the app loads, check for a saved session
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      setUser({ token }); // You could decode the token or fetch user details if needed
-    }
+    const checkAuth = async () => {
+      try {
+        const { data } = await api.get("/auth/me");
+        setUser(data);
+      } catch (error) {
+        // Not authenticated
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkAuth();
   }, []);
 
-  const login = (token) => {
-    localStorage.setItem("token", token);
-    setUser({ token });
+  const login = (userData) => {
+    // userData should be the user object returned from login API
+    setUser(userData);
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
+  const logout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

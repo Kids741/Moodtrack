@@ -18,12 +18,24 @@ const MAX_HISTORY = Number(process.env.MAX_HISTORY_MESSAGES || 8);
 
 // simple auth middleware 
 async function authMiddleware(req, res, next) {
-const auth = req.headers.authorization;
-if (!auth) return res.status(401).json({ error: "Missing auth" });
-const token = auth.split(" ")[1];
+const authHeader = req.headers.authorization;
+let token = null;
+
+if (authHeader?.startsWith("Bearer ")) {
+token = authHeader.split(" ")[1];
+}
+
+if (!token && req.cookies?.jwt) {
+token = req.cookies.jwt;
+}
+
+if (!token) {
+return res.status(401).json({ error: "Missing auth" });
+}
+
 try {
 const payload = jwt.verify(token, process.env.JWT_SECRET);
-req.user = payload; // { userId, email }
+req.user = payload.user || payload; // Handle both { user: {...} } and flat payload
 next();
 } catch (err) {
 return res.status(401).json({ error: "Invalid token" });
@@ -33,7 +45,7 @@ return res.status(401).json({ error: "Invalid token" });
 
 router.post("/", authMiddleware, async (req, res) => {
 try {
-const userId = req.user.userId;
+const userId = req.user.id; // Changed from userId to id
 if (checkRateLimit(userId)) return res.status(429).json({ error: "Rate limit" });
 
 

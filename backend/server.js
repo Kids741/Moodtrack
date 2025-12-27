@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import helmet from "helmet";
 import moodRoutes from "./routes/moodRoutes.js";
@@ -15,6 +16,11 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const app = express();
+
+// Trust proxy for secure cookies behind load balancers (e.g. Heroku, Vercel, AWS)
+app.set('trust proxy', 1);
+
+app.use(cookieParser());
 
 // === MongoDB Connection ===
 const connectDB = async () => {

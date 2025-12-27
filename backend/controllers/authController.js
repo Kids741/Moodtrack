@@ -50,8 +50,14 @@ export const registerUser = async (req, res) => {
       { expiresIn: "60m" }
     );
 
+    res.cookie("jwt", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 1000, // 1 hour
+    });
+
     res.status(201).json({
-      token,
       user: { id: user._id, name: user.name, email: user.email },
     });
   } catch (error) {
@@ -71,8 +77,15 @@ export const loginUser = async (req, res) => {
     const token = jwt.sign(
       { user: { id: user._id, name: user.name, email: user.email } },
       process.env.JWT_SECRET,
-      { expiresIn: "60m" }
+      { expiresIn: "10m" }
     );
+
+    res.cookie("jwt", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 10 * 60 * 1000, // 10 minutes
+    });
 
     res.json({
       token,
@@ -81,6 +94,14 @@ export const loginUser = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+};
+
+export const logoutUser = (req, res) => {
+  res.cookie("jwt", "", {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+  res.status(200).json({ message: "Logged out successfully" });
 };
 
 // New controller for /auth/me

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "@/utils/axios";
+import { useAuth } from "@/context/AuthContext";
 import {
   XAxis,
   YAxis,
@@ -117,7 +118,7 @@ const buildMoodDistribution = (entries) => {
 };
 
 function Dashboard() {
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();
   const [moodEntries, setMoodEntries] = useState([]);
   const [moodLoading, setMoodLoading] = useState(false);
   const [moodError, setMoodError] = useState(null);
@@ -147,18 +148,6 @@ function Dashboard() {
   ];
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Failed to parse stored user", error);
-        setUser(null);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
     const fetchMoods = async () => {
       setMoodLoading(true);
       setMoodError(null);
@@ -179,15 +168,15 @@ function Dashboard() {
       }
     };
 
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!user) {
       setMoodEntries([]);
       setMoodError("Please log in to see your mood history.");
+      setMoodLoading(false);
       return;
     }
 
     fetchMoods();
-  }, []);
+  }, [user]);
 
   const { chartData, moodKeys } = useMemo(
     () => aggregateWeeklyTrend(moodEntries),

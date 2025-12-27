@@ -21,6 +21,7 @@ import {
   AlertCircle 
 } from "lucide-react";
 import api from "@/utils/axios";
+import { useAuth } from "@/context/AuthContext";
 
 const ROLE_OPTIONS = [
   { 
@@ -28,14 +29,16 @@ const ROLE_OPTIONS = [
     label: "Client", 
     description: "Track your personal mood & journal",
     icon: User,
-    color: "from-blue-500 to-indigo-500"
+    color: "from-blue-500 to-indigo-500",
+    disabled: false,
   },
   { 
     value: "therapist", 
     label: "Therapist", 
     description: "Manage client progress & insights",
     icon: Stethoscope,
-    color: "from-emerald-500 to-teal-500"
+    color: "from-emerald-500 to-teal-500",
+    disabled: true,
   },
 ];
 
@@ -50,6 +53,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [hoveredRole, setHoveredRole] = useState(null);
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.id]: e.target.value });
@@ -68,8 +72,7 @@ export default function SignupPage() {
 
     try {
       const res = await api.post("/auth/register", form);
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      login(res.data.user);
       
       setMessage({ 
         text: "Welcome to MoodTrack! Redirecting to your dashboard...", 
@@ -126,11 +129,14 @@ export default function SignupPage() {
               {ROLE_OPTIONS.map((roleOption) => {
                 const Icon = roleOption.icon;
                 const isSelected = form.role === roleOption.value;
+                const isDisabled = roleOption.disabled;
                 return (
                   <button
                     key={roleOption.value}
                     type="button"
-                    onClick={() => handleRoleSelect(roleOption)}
+                    onClick={() => {
+                      if (!isDisabled) handleRoleSelect(roleOption);
+                    }}
                     onMouseEnter={() => setHoveredRole(roleOption.value)}
                     onMouseLeave={() => setHoveredRole(null)}
                     className={`group p-4 rounded-2xl border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
@@ -139,7 +145,7 @@ export default function SignupPage() {
                         : hoveredRole === roleOption.value
                         ? "border-indigo-300 bg-indigo-50/50 shadow-lg scale-[1.02]"
                         : "border-gray-200 hover:border-indigo-300 hover:bg-indigo-50"
-                    }`}
+                    } ${isDisabled ? "cursor-not-allowed opacity-80" : ""}`}
                   >
                     <div className="flex items-start gap-4">
                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg ${

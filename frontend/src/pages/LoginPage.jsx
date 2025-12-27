@@ -5,12 +5,14 @@ import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Eye, EyeOff } from "lucide-react"
 import api from "@/utils/axios" // axios instance made
+import { useAuth } from "@/context/AuthContext"
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" })
   const [message, setMessage] = useState("")
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const { login } = useAuth()
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.id]: e.target.value })
@@ -23,8 +25,13 @@ export default function LoginPage() {
 
     try {
       const res = await api.post("/auth/login", form)
-      localStorage.setItem("token", res.data.token)
-      localStorage.setItem("user", JSON.stringify(res.data.user))
+      
+      // Save token to localStorage
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token)
+      }
+      
+      login(res.data.user)
       setMessage("Login successful! Redirecting...")
       setTimeout(() => {
         window.location.href = "/dashboard" // redirect after login

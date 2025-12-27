@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import {
   Settings,
   User,
@@ -19,7 +20,7 @@ import {
 } from "lucide-react";
 
 const SettingsPage = () => {
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState({
     dailyReminders: true,
     weeklyReports: false,
@@ -38,13 +39,6 @@ const SettingsPage = () => {
     notificationsSound: true
   });
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
-
   const toggleNotification = (key) => {
     setNotifications(prev => ({
       ...prev,
@@ -58,9 +52,12 @@ const SettingsPage = () => {
     document.documentElement.classList.toggle("dark");
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    window.location.href = "/login";
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
   };
 
   return (
