@@ -72,6 +72,12 @@ export default function SignupPage() {
 
     try {
       const res = await api.post("/auth/register", form);
+      
+      // Save token to localStorage
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+      }
+      
       login(res.data.user);
       
       setMessage({ 
