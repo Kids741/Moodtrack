@@ -17,7 +17,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 const app = express();
 
-// Trust proxy for secure cookies behind load balancers (e.g. Heroku, Vercel, AWS)
+// Trust proxy for secure cookies behind load balancers (e.g Vercel, AWS)
 app.set('trust proxy', 1);
 
 app.use(cookieParser());
@@ -54,6 +54,8 @@ connectDB();
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'https://mood-track.app',
+  'https://www.mood-track.app',
 ];
 
 const corsOptions = {
