@@ -21,6 +21,7 @@ import FlowerPage from "./pages/Flower.jsx";
 import FAQPage from "./pages/FAQPage.jsx";
 import NotFoundPage from "./pages/NotFoundPage.jsx";
 import { ErrorPage } from "./components/ErrorBoundary.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 
 import "./index.css";
@@ -35,17 +36,17 @@ const router = createBrowserRouter([
       { path: "/login", element: <LoginPage /> },
       { path: "/signup", element: <SignupPage /> },
       { path: "/forgot-password", element: <ForgotPasswordPage /> },
-      { path: "/logmood", element: <LogMoodPage /> },
-      { path: "/mood-tracker", element: <MoodTrackerPage /> },
-      { path: "/journal", element: <JournalPage /> },
-      { path: "/chatbot", element: <ChatbotPage /> },
+      { path: "/logmood", element: <ProtectedRoute><LogMoodPage /></ProtectedRoute> },
+      { path: "/mood-tracker", element: <ProtectedRoute><MoodTrackerPage /></ProtectedRoute> },
+      { path: "/journal", element: <ProtectedRoute><JournalPage /></ProtectedRoute> },
+      { path: "/chatbot", element: <ProtectedRoute><ChatbotPage /></ProtectedRoute> },
       { path: "/about", element: <About /> },
-      { path: "/settings", element: <SettingsPage /> },
+      { path: "/settings", element: <ProtectedRoute><SettingsPage /></ProtectedRoute> },
       { path: "/therapists", element: <Therapists /> },
-      { path: "/flower", element: <FlowerPage /> },
+      { path: "/flower", element: <ProtectedRoute><FlowerPage /></ProtectedRoute> },
       { path: "/contact", element: <ContactPage /> },
       { path: "/faq", element: <FAQPage /> },
-      { path: "/dashboard", element: <Dashboard /> },
+      { path: "/dashboard", element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
       { path: "*", element: <NotFoundPage /> },
     ],
   },
