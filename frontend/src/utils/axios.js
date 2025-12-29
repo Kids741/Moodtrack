@@ -28,12 +28,17 @@ api.interceptors.response.use(
     if (error.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
-      console.error("API Error Response:", error.response.data);
+      // Silently handle expected errors (like 401 from /auth/me)
+      if (!error.config.url.includes('/auth/me') || error.response.status !== 401) {
+        console.error("API Error Response:", error.response.data);
+      }
       
       // Handle unauthorized errors (e.g., token expired)
       if (error.response.status === 401) {
-        // Redirect to login or refresh token
-        console.warn("Unauthorized access, redirecting to login");
+        // Silently handle 401 from /auth/me (it's expected when not logged in)
+        if (!error.config.url.includes('/auth/me')) {
+          console.warn("Unauthorized access, redirecting to login");
+        }
         localStorage.removeItem("token");
         localStorage.removeItem("user");
       }
